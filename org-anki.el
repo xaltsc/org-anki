@@ -917,8 +917,13 @@ syntax."
   (if html
       (replace-regexp-in-string
        "\n+$" ""
-       (shell-command-to-string
-        (format "pandoc --wrap=none --from=html --to=org <<< %s" (shell-quote-argument html))))
+       (let ((temp-file (make-temp-file "org-anki-html-" nil ".html")))
+         (with-temp-file temp-file
+           (insert html))
+         (prog1
+           (shell-command-to-string
+            (format "pandoc --wrap=none --from=html --to=org -i %s" temp-file))
+           (delete-file temp-file))))
     ""))
 
 (defun org-anki--write-note-properties (note)
